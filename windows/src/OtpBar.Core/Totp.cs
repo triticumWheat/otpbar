@@ -14,8 +14,6 @@ public static class Totp
     public static OtpCode Generate(OtpEntry entry, DateTimeOffset at) =>
         Generate(entry, (at - DateTimeOffset.UnixEpoch).TotalSeconds);
 
-    public static OtpCode Generate(OtpEntry entry) => Generate(entry, DateTimeOffset.UtcNow);
-
     public static OtpCode Generate(OtpEntry entry, double unixSeconds)
     {
         var counterValue = Math.Floor(unixSeconds / entry.Period);

@@ -60,6 +60,4 @@ public sealed class SecureClipboard
         }
         _ownSequenceNumber = null;
     }
-
-    public void Forget() => _ownSequenceNumber = null;
 }
