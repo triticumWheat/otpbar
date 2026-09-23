@@ -73,6 +73,34 @@ node scripts/generate-test-fixtures.mjs
 
 Apple 的数据保护钥匙串需要由 provisioning profile 授权的签名权限。未来改变分发方式时再考虑迁移；两种实现及权限差异见 [Apple TN3137](https://developer.apple.com/documentation/technotes/tn3137-on-mac-keychains)。
 
+## Windows
+
+### 工具链
+
+`windows/` 下是一套独立的 .NET 解决方案，需要 .NET 10 SDK，不需要 Visual Studio。`windows/src/OtpBar.Core` 是与平台无关的验证码、备份与本地数据规则，`windows/src/OtpBar.App` 是 WPF 界面，二维码解码使用 ZXing.Net。
+
+### 构建应用
+
+```powershell
+powershell -File windows\build.ps1
+```
+
+生成 `windows/.build/OTPBar.exe`，自包含发布，目标机器无需安装 .NET。刻意不启用单文件压缩：压缩能让体积减半，但进程常驻内存会翻倍，而这个程序整天开着。
+
+### 测试
+
+```powershell
+dotnet test windows -warnaserror
+```
+
+测试直接读取 `Tests/OTPBarCoreTests/Fixtures/` 中的同一批向量，不另存副本，因此重新运行 `scripts/generate-test-fixtures.mjs` 会同时更新两套实现的预期值。覆盖 RFC 6238、RFC 4648、独立生成的 TOTP 参数组合、2FAS 解密、`otpauth://` 解析、错误输入、重复导入、删除与保存失败。DPAPI 存储测试在临时目录中进行，不触碰真实数据。
+
+### Windows 本地数据边界
+
+本地数据写入 `%LOCALAPPDATA%\OTPBar\vault.v1.dat`，由 DPAPI 以当前 Windows 账户为范围加密，并附带一个固定 entropy 作为域分隔；换账户或换机器都无法解开。写入先落临时文件再替换，被中断的写入不会截断原本可读的数据。同一份本地数据同时只允许一个实例运行。
+
+Windows 保留剪贴板历史（Win+V）并可能把剪贴板同步到其他设备，仅在验证码过期时清空剪贴板并不足以让它消失。复制验证码时因此附带 `ExcludeClipboardContentFromMonitorProcessing`、`CanIncludeInClipboardHistory` 与 `CanUploadToCloudClipboard` 三个格式；过期清理只在剪贴板仍是本程序写入的内容时执行，不会覆盖他方写入。从屏幕添加账号读取的是选中的屏幕区域而非剪贴板中的截图，因为二维码截图里就是密钥，而清空剪贴板不能移除剪贴板历史中已有的条目。
+
 ## 本机记录
 
 工具版本、安装状态与本机验证结果放在已忽略的 `docs/local/`。真实 `.2fas` 备份和密钥不入仓。
