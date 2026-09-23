@@ -1,0 +1,100 @@
+<Window x:Class="OtpBar.App.AddAccountWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="添加账号" Width="520" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
+        Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextBrush}"
+        TextOptions.TextFormattingMode="Display" UseLayoutRounding="True">
+
+    <Window.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="{DynamicResource FieldBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="CaretBrush" Value="{DynamicResource TextBrush}" />
+        </Style>
+        <Style TargetType="ComboBox">
+            <Setter Property="Padding" Value="8,5" />
+            <Setter Property="FontSize" Value="13" />
+        </Style>
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource MutedBrush}" />
+            <Setter Property="Margin" Value="0,14,0,4" />
+        </Style>
+    </Window.Resources>
+
+    <StackPanel Margin="22,18,22,20">
+        <TextBlock Text="从二维码读取" FontSize="12" Foreground="{DynamicResource MutedBrush}" />
+        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+            <Button x:Name="ScanButton" Content="扫描屏幕上的二维码" Style="{StaticResource CompactPrimary}"
+                    Click="OnScanScreen" />
+            <Button Content="从图片文件…" Style="{StaticResource Compact}" Margin="8,0,0,0" Click="OnScanFile" />
+            <Button Content="粘贴链接" Style="{StaticResource Compact}" Margin="8,0,0,0" Click="OnPasteLink" />
+        </StackPanel>
+        <TextBlock Text="重新注册两步验证时，网页上的二维码就在屏幕上，直接框选即可，密钥不经过剪贴板。"
+                   FontSize="11" Margin="0,8,0,0" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}" />
+
+        <Border Height="1" Margin="0,16" Background="{DynamicResource LineBrush}" />
+
+        <TextBlock Text="名称" Style="{StaticResource Label}" Margin="0,0,0,4" />
+        <TextBox x:Name="NameBox" TextChanged="OnFieldChanged" />
+
+        <TextBlock Text="账号（可留空）" Style="{StaticResource Label}" />
+        <TextBox x:Name="AccountBox" TextChanged="OnFieldChanged" />
+
+        <TextBlock Text="密钥（Base32，也可直接粘贴 otpauth:// 链接）" Style="{StaticResource Label}" />
+        <TextBox x:Name="SecretBox" FontFamily="Consolas, Cascadia Mono, Courier New"
+                 TextWrapping="Wrap" AcceptsReturn="False" TextChanged="OnSecretChanged" />
+
+        <Grid Margin="0,14,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="12" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="算法" Style="{StaticResource Label}" Margin="0,0,0,4" />
+                <ComboBox x:Name="AlgorithmBox" SelectionChanged="OnFieldChanged" />
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="位数" Style="{StaticResource Label}" Margin="0,0,0,4" />
+                <ComboBox x:Name="DigitsBox" SelectionChanged="OnFieldChanged" />
+            </StackPanel>
+            <StackPanel Grid.Column="4">
+                <TextBlock Text="周期（秒）" Style="{StaticResource Label}" Margin="0,0,0,4" />
+                <ComboBox x:Name="PeriodBox" SelectionChanged="OnFieldChanged" />
+            </StackPanel>
+        </Grid>
+
+        <Border Margin="0,18,0,0" Padding="14,12" CornerRadius="8"
+                Background="{DynamicResource SidebarBrush}" BorderBrush="{DynamicResource LineBrush}"
+                BorderThickness="1">
+            <StackPanel>
+                <TextBlock Text="当前验证码 — 保存前请与手机上的对照" FontSize="11"
+                           Foreground="{DynamicResource MutedBrush}" />
+                <Grid Margin="0,6,0,0">
+                    <TextBlock x:Name="PreviewCode" FontSize="24" FontWeight="Medium"
+                               FontFamily="Consolas, Cascadia Mono, Courier New" Text="—" />
+                    <TextBlock x:Name="PreviewRemaining" FontSize="11" VerticalAlignment="Center"
+                               HorizontalAlignment="Right" Foreground="{DynamicResource MutedBrush}" />
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <TextBlock x:Name="MessageText" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap"
+                   Foreground="{DynamicResource DangerBrush}" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+            <!-- No IsCancel: it would set DialogResult, which is only legal while the window is modal. -->
+            <Button Content="取消" Style="{StaticResource Compact}" Click="OnCancel" />
+            <Button x:Name="SaveButton" Content="添加" Style="{StaticResource CompactPrimary}" Margin="8,0,0,0"
+                    IsDefault="True" IsEnabled="False" Click="OnSave" />
+        </StackPanel>
+    </StackPanel>
+</Window>

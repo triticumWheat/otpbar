@@ -13,7 +13,9 @@ public enum OtpErrorKind
     DecryptionFailed,
     InvalidVault,
     EntryNotFound,
-    DuplicateEntry
+    DuplicateEntry,
+    InvalidOtpAuthUri,
+    NoCodeFound
 }
 
 /// <summary>Every failure the vault surfaces to the interface, with a message safe to display.</summary>
@@ -65,4 +67,10 @@ public sealed class OtpException : Exception
 
     public static OtpException DuplicateEntry() =>
         new(OtpErrorKind.DuplicateEntry, "已存在使用相同密钥和生成参数的条目。");
+
+    public static OtpException InvalidOtpAuthUri() =>
+        new(OtpErrorKind.InvalidOtpAuthUri, "这不是有效的验证码链接，应以 otpauth://totp/ 开头并带有 secret 参数。");
+
+    public static OtpException NoCodeFound() =>
+        new(OtpErrorKind.NoCodeFound, "没有识别到二维码，请重新框选，确保整个二维码都在框内。");
 }

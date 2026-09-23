@@ -177,6 +177,29 @@ public partial class SettingsWindow : Window
         }
     }
 
+    internal void ShowAddAccount() => OnAddClicked(this, new RoutedEventArgs());
+
+    private void OnAddClicked(object sender, RoutedEventArgs e)
+    {
+        if (_model.IsEditing)
+        {
+            ShowStatus("请先保存或撤销当前修改。");
+            return;
+        }
+        if (AddAccountWindow.Prompt(this) is not { } entry)
+        {
+            return;
+        }
+        try
+        {
+            _model.Add(entry);
+        }
+        catch (OtpException error)
+        {
+            ShowStatus(error.Message);
+        }
+    }
+
     private void OnImportClicked(object sender, RoutedEventArgs e)
     {
         var picker = new OpenFileDialog

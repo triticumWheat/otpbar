@@ -70,6 +70,11 @@ public partial class App : Application
         {
             TogglePopup();
         }
+        else if (e.Args.Contains("--add"))
+        {
+            ShowSettings();
+            Dispatcher.BeginInvoke(() => _settings?.ShowAddAccount());
+        }
         else if (e.Args.Contains("--settings") || _model.Entries.Count == 0 || _model.LoadError is not null)
         {
             ShowSettings();

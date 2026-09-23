@@ -45,8 +45,10 @@
                 <Border DockPanel.Dock="Top" Padding="16,16,16,10">
                     <StackPanel>
                         <TextBlock Text="账号" FontSize="13" FontWeight="Medium" />
-                        <Button x:Name="ImportButton" Content="导入 2FAS 备份…" Margin="0,10,0,0"
-                                Style="{StaticResource CompactPrimary}" Click="OnImportClicked" />
+                        <Button x:Name="AddButton" Content="添加账号…" Margin="0,10,0,0"
+                                Style="{StaticResource CompactPrimary}" Click="OnAddClicked" />
+                        <Button x:Name="ImportButton" Content="导入 2FAS 备份…" Margin="0,8,0,0"
+                                Style="{StaticResource Compact}" Click="OnImportClicked" />
                     </StackPanel>
                 </Border>
                 <ListBox x:Name="AccountList" Background="Transparent" BorderThickness="0"

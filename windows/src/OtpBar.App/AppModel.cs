@@ -78,6 +78,16 @@ public sealed class AppModel : INotifyPropertyChanged
         return result;
     }
 
+    public void Add(OtpEntry entry)
+    {
+        var vault = _vault ?? throw OtpException.InvalidVault();
+        vault.Add(entry);
+        // Selection first: the list rebuilds on the Entries change and reads it.
+        SelectedId = entry.Id;
+        Entries = vault.Entries;
+        Message = $"已添加“{entry.Name}”。";
+    }
+
     public void Update(OtpEntry entry)
     {
         var vault = _vault ?? throw OtpException.InvalidVault();

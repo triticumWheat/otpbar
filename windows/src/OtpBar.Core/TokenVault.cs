@@ -43,6 +43,15 @@ public sealed class TokenVault
         return new ImportResult(added, skipped);
     }
 
+    public void Add(OtpEntry entry)
+    {
+        if (_entries.Any(existing => existing.HasSameGenerator(entry)))
+        {
+            throw OtpException.DuplicateEntry();
+        }
+        Save([.. _entries, entry]);
+    }
+
     public void Update(OtpEntry entry)
     {
         var index = _entries.FindIndex(existing => existing.Id == entry.Id);

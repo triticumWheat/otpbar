@@ -30,4 +30,8 @@
     <ProjectReference Include="..\OtpBar.Core\OtpBar.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="ZXing.Net" Version="0.16.11" />
+  </ItemGroup>
+
 </Project>

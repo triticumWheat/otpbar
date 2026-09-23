@@ -142,6 +142,40 @@ public class TokenVaultTests
     }
 
     [Fact]
+    public void AddedEntriesPersistAndRejectGeneratorCollisions()
+    {
+        var storage = new MemoryStorage();
+        var vault = new TokenVault(storage);
+
+        var added = new OtpEntry("Manual", PublicTestSecret, account: "me@example.invalid");
+        vault.Add(added);
+        Assert.Equal([added], vault.Entries);
+        Assert.Equal([added], new TokenVault(storage).Entries);
+
+        // Same generator behind a different label is still the same account.
+        var writesBefore = storage.Writes;
+        Throws(OtpErrorKind.DuplicateEntry,
+            () => vault.Add(new OtpEntry("Another name", PublicTestSecret.ToLowerInvariant() + "\n")));
+        Assert.Equal(writesBefore, storage.Writes);
+        Assert.Equal([added], vault.Entries);
+
+        // Differing in any generator parameter makes it a separate account.
+        vault.Add(new OtpEntry("Manual", PublicTestSecret, period: 60));
+        Assert.Equal(2, vault.Entries.Count);
+    }
+
+    [Fact]
+    public void AFailedWriteLeavesAnAddedEntryOutOfMemoryToo()
+    {
+        var storage = new MemoryStorage { FailWrite = true };
+        var vault = new TokenVault(storage);
+
+        Assert.Throws<TestFailureException>(() => vault.Add(new OtpEntry("Manual", PublicTestSecret)));
+        Assert.Empty(vault.Entries);
+        Assert.Null(storage.Data);
+    }
+
+    [Fact]
     public void EditsValidateIdentityAndAvoidGeneratorCollision()
     {
         var storage = new MemoryStorage();
