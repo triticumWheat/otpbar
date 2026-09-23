@@ -103,5 +103,16 @@ public class TotpTests
         }
     }
 
+    [Fact]
+    public void DescribingAnEntryNeverSpellsOutTheSecret()
+    {
+        // The description reaches accessibility tools, logs and debuggers.
+        var described = new OtpEntry("GitHub", PublicTestSecret, account: "me@example.invalid").ToString();
+
+        Assert.DoesNotContain(PublicTestSecret, described, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal("GitHub (me@example.invalid)", described);
+        Assert.Equal("GitHub", new OtpEntry("GitHub", PublicTestSecret).ToString());
+    }
+
     private sealed record Vector(string Algorithm, int Digits, int Period, double Timestamp, string Code);
 }

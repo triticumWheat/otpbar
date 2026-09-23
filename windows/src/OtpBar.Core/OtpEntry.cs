@@ -42,4 +42,10 @@ public sealed record OtpEntry
     /// <summary>Two entries collide when they would always produce the same code, regardless of label.</summary>
     public bool HasSameGenerator(OtpEntry other) =>
         Secret == other.Secret && Algorithm == other.Algorithm && Digits == other.Digits && Period == other.Period;
+
+    /// <summary>
+    /// Replaces the description a record would generate, which spells out the secret. That text reaches
+    /// accessibility tools, log files and debuggers, none of which should ever be handed the key.
+    /// </summary>
+    public override string ToString() => Account.Length > 0 ? $"{Name} ({Account})" : Name;
 }
