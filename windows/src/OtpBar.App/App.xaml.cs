@@ -1,4 +1,7 @@
-﻿using System.Windows;
+﻿using System.IO;
+using System.Security.Cryptography;
+using System.Text;
+using System.Windows;
 using OtpBar.Core;
 using Forms = System.Windows.Forms;
 
@@ -6,6 +9,8 @@ namespace OtpBar.App;
 
 public partial class App : Application
 {
+    private static Mutex? _onlyInstance;
+
     private AppModel _model = null!;
     private Forms.NotifyIcon _trayIcon = null!;
     private CodePopupWindow? _popup;
@@ -16,8 +21,33 @@ public partial class App : Application
         base.OnStartup(e);
         Theme.Apply(Resources);
 
+        // Without this the process disappears on an unexpected failure and the user is left guessing
+        // whether what they just entered was saved. The vault only updates itself after a successful
+        // write, so carrying on after a report leaves memory and disk agreeing.
+        DispatcherUnhandledException += (_, args) =>
+        {
+            args.Handled = true;
+            var written = Record(args.Exception);
+            MessageBox.Show(
+                $"刚才的操作没有完成，数据没有改动。\n\n" +
+                $"{args.Exception.GetType().Name}: {args.Exception.Message}\n\n" +
+                (written is null ? "" : $"详细信息已写入\n{written}"),
+                "OTPBar", MessageBoxButton.OK, MessageBoxImage.Warning);
+        };
+
         // --vault <path> runs against a throwaway vault, --popup/--settings open a window without the tray.
         var vaultPath = ArgumentValue(e.Args, "--vault");
+
+        // One copy per vault. A second would add a duplicate tray icon and race the first over the file.
+        var key = Convert.ToHexString(SHA256.HashData(
+            Encoding.UTF8.GetBytes((vaultPath ?? DpapiStorage.DefaultPath).ToLowerInvariant())))[..16];
+        _onlyInstance = new Mutex(initiallyOwned: true, $@"Local\OTPBar.{key}", out var isOnlyInstance);
+        if (!isOnlyInstance)
+        {
+            Shutdown();
+            return;
+        }
+
         _model = new AppModel(vaultPath is null ? null : new DpapiStorage(vaultPath));
 
         _trayIcon = new Forms.NotifyIcon
@@ -46,6 +76,26 @@ public partial class App : Application
         }
     }
 
+    /// <summary>
+    /// Keeps the full stack next to the vault so a failure can be diagnosed after the fact.
+    /// Returns where it went, or null when even that did not work. Entries and codes are never written.
+    /// </summary>
+    private static string? Record(Exception error)
+    {
+        var path = Path.Combine(Path.GetDirectoryName(DpapiStorage.DefaultPath)!, "error.log");
+        try
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.AppendAllText(path, $"{DateTimeOffset.Now:yyyy-MM-dd HH:mm:ss zzz}\n{error}\n\n");
+            return path;
+        }
+        catch (Exception)
+        {
+            // Reporting must never replace the failure it is reporting.
+            return null;
+        }
+    }
+
     private static string? ArgumentValue(string[] args, string name)
     {
         var index = Array.IndexOf(args, name);
@@ -54,9 +104,14 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
-        _model.ClearCopiedCode();
-        _trayIcon.Visible = false;
-        _trayIcon.Dispose();
+        // Also reached by the duplicate-instance path, before anything has been built.
+        _model?.ClearCopiedCode();
+        if (_trayIcon is not null)
+        {
+            // Skipping this is what leaves a dead icon sitting in the notification area.
+            _trayIcon.Visible = false;
+            _trayIcon.Dispose();
+        }
         base.OnExit(e);
     }
 
