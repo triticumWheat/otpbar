@@ -2,6 +2,9 @@ using System.Security.Cryptography;
 using OtpBar.Core;
 using static OtpBarTests.TestSupport;
 
+// One test moves the working directory, which is process-wide state.
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+
 namespace OtpBarTests;
 
 public sealed class DpapiStorageTests : IDisposable
@@ -51,6 +54,27 @@ public sealed class DpapiStorageTests : IDisposable
         // DPAPI authenticates the blob, so a damaged vault never reaches the decoder.
         Assert.Throws<CryptographicException>(() => new TokenVault(new DpapiStorage(Path_)));
         Assert.Equal(stored, File.ReadAllBytes(Path_));
+    }
+
+    [Fact]
+    public void APathWithNoDirectoryPartIsStillWritable()
+    {
+        // "--vault vault.dat" is a relative name with no directory, which must not be treated
+        // as a request to create a directory called "".
+        var previous = Directory.GetCurrentDirectory();
+        Directory.CreateDirectory(_directory);
+        Directory.SetCurrentDirectory(_directory);
+        try
+        {
+            var vault = new TokenVault(new DpapiStorage("bare.dat"));
+            vault.ImportBackup(Fixture("plaintext-v4"));
+            Assert.Equal(2, vault.Entries.Count);
+            Assert.Equal(vault.Entries, new TokenVault(new DpapiStorage("bare.dat")).Entries);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(previous);
+        }
     }
 
     [Fact]

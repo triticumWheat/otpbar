@@ -16,7 +16,9 @@ public sealed class DpapiStorage : IVaultStorage
 
     public DpapiStorage(string? path = null)
     {
-        _path = path ?? DefaultPath;
+        // Resolved up front: a bare file name has no directory part, and asking to create a
+        // directory called "" throws rather than writing the vault.
+        _path = Path.GetFullPath(path ?? DefaultPath);
     }
 
     public static string DefaultPath => Path.Combine(
