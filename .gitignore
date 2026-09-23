@@ -6,6 +6,13 @@ DerivedData/
 xcuserdata/
 *.xcuserstate
 
+# Windows and .NET build artifacts
+bin/
+obj/
+dist/
+.vs/
+*.user
+
 # Local data and authenticator backups
 docs/local/
 CLAUDE.local.md

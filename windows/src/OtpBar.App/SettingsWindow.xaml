@@ -1,0 +1,116 @@
+﻿<Window x:Class="OtpBar.App.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="OTPBar — 设置" Width="850" Height="578" MinWidth="700" MinHeight="578"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource SurfaceBrush}" Foreground="{DynamicResource TextBrush}"
+        TextOptions.TextFormattingMode="Display" UseLayoutRounding="True">
+
+    <Window.Resources>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="{DynamicResource FieldBrush}" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="CaretBrush" Value="{DynamicResource TextBrush}" />
+        </Style>
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Foreground" Value="{DynamicResource MutedBrush}" />
+            <Setter Property="Margin" Value="0,14,0,4" />
+        </Style>
+        <Style x:Key="Readonly" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="280" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Accounts -->
+        <Border Grid.Row="0" Grid.Column="0" Background="{DynamicResource SidebarBrush}"
+                BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Padding="16,16,16,10">
+                    <StackPanel>
+                        <TextBlock Text="账号" FontSize="13" FontWeight="Medium" />
+                        <Button x:Name="ImportButton" Content="导入 2FAS 备份…" Margin="0,10,0,0"
+                                Style="{StaticResource CompactPrimary}" Click="OnImportClicked" />
+                    </StackPanel>
+                </Border>
+                <ListBox x:Name="AccountList" Background="Transparent" BorderThickness="0"
+                         Margin="8,0,8,8" SelectedValuePath="Id"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         SelectionChanged="OnSelectionChanged">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="4,6">
+                                <TextBlock Text="{Binding Name}" FontSize="13" TextTrimming="CharacterEllipsis" />
+                                <TextBlock Text="{Binding Account}" FontSize="11" TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource MutedBrush}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- Detail -->
+        <ScrollViewer Grid.Row="0" Grid.Column="1" VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="Detail" Margin="28,20,28,20">
+                <TextBlock x:Name="DetailTitle" Text="账号详情" FontSize="17" FontWeight="Medium" />
+
+                <TextBlock Text="名称" Style="{StaticResource Label}" />
+                <TextBox x:Name="NameBox" TextChanged="OnFieldChanged" />
+
+                <TextBlock Text="账号" Style="{StaticResource Label}" />
+                <TextBox x:Name="AccountBox" TextChanged="OnFieldChanged" />
+
+                <TextBlock Text="密钥" Style="{StaticResource Label}" />
+                <Grid>
+                    <TextBlock x:Name="SecretText" Style="{StaticResource Readonly}"
+                               FontFamily="Consolas, Cascadia Mono, Courier New" Margin="0,0,70,0" />
+                    <CheckBox x:Name="RevealSecret" Content="显示" HorizontalAlignment="Right" VerticalAlignment="Top"
+                              FontSize="12" Foreground="{DynamicResource MutedBrush}" Checked="OnRevealChanged"
+                              Unchecked="OnRevealChanged" />
+                </Grid>
+
+                <TextBlock Text="生成参数" Style="{StaticResource Label}" />
+                <TextBlock x:Name="ParametersText" Style="{StaticResource Readonly}" />
+                <TextBlock Text="生成参数由备份决定，修改后验证码就不再匹配，因此不可编辑。" FontSize="11"
+                           Margin="0,6,0,0" TextWrapping="Wrap" Foreground="{DynamicResource MutedBrush}" />
+
+                <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+                    <Button x:Name="SaveButton" Content="保存修改" Style="{StaticResource CompactPrimary}"
+                            IsEnabled="False" Click="OnSaveClicked" />
+                    <Button x:Name="RevertButton" Content="撤销" Style="{StaticResource Compact}" Margin="8,0,0,0"
+                            IsEnabled="False" Click="OnRevertClicked" />
+                    <Button x:Name="DeleteButton" Content="从这台电脑删除" Style="{StaticResource CompactDanger}"
+                            Margin="8,0,0,0" Click="OnDeleteClicked" />
+                </StackPanel>
+
+                <TextBlock Text="编辑和删除仅影响本机，不会同步回手机。新增手机账号需要重新导出备份再导入。"
+                           FontSize="11" Margin="0,16,0,0" TextWrapping="Wrap"
+                           Foreground="{DynamicResource MutedBrush}" />
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Status -->
+        <Border Grid.Row="1" Grid.ColumnSpan="2" Background="{DynamicResource SidebarBrush}"
+                BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Padding="16,10">
+            <TextBlock x:Name="MessageText" FontSize="12" TextWrapping="Wrap"
+                       Foreground="{DynamicResource MutedBrush}" />
+        </Border>
+    </Grid>
+</Window>

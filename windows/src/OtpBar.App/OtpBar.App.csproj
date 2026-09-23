@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>OTPBar</AssemblyName>
+    <RootNamespace>OtpBar.App</RootNamespace>
+    <ApplicationIcon>Assets\otpbar.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WinForms and GDI+ are referenced only for the tray icon; without this every shared type name
+         (Application, Clipboard, MessageBox, OpenFileDialog, Color…) becomes ambiguous with WPF. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\tray-light.ico" />
+    <Resource Include="Assets\tray-dark.ico" />
+    <Resource Include="Assets\otpbar.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OtpBar.Core\OtpBar.Core.csproj" />
+  </ItemGroup>
+
+</Project>
